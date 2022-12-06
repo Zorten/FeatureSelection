@@ -1,16 +1,19 @@
 import pandas as pd
 import random
 
-data = pd.read_csv("CS170_Small_Data__114.txt", sep="  ", header=None, engine='python')
+data = pd.read_csv("smallTest.txt", sep="  ", header=None, engine='python')
 #print(data.head(10))
 
+#Cross Validation
+def leave_one_out_cross_validation(data): #, current_set, feature_to_add):
+    #Loop to traverse the instances
+    for i in range(0, len(data)):
+        object_to_classify = data.iloc[i, 1:]
+        label_object_to_classify = data.iloc[i, 0]
 
-####TACKLE SEARCH FIRST
+        print("Looping over i, at the " + str(i+1) + " location")
+        print("The " + str(i+1) + "th object is in class " + str(label_object_to_classify))
 
-#STUB FUNCTION
-def leave_one_out_cross_validation(data, current_set, feature_to_add):
-    accuracy = random.random()
-    return accuracy
 
 #Search function
 def feature_search(data):
@@ -46,5 +49,5 @@ def feature_search(data):
 
     print(current_set_of_features)
 
-feature_search(data)  
+leave_one_out_cross_validation(data)  
 
