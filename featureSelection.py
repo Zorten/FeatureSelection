@@ -3,16 +3,17 @@ import math
 import random
 import copy
 
-data = pd.read_csv("smallTest.txt", sep="  ", header=None, engine='python')
-#print(data.head(10))
-
 #Cross Validation
-def leave_one_out_cross_validation(data, current_set, feature_to_add):
-    ###ATTEMPTING TO FIX 
+def leave_one_out_cross_validation(data, current_set, feature_to_add, choice): 
     current_set = copy.deepcopy(current_set)
-    current_set.append(feature_to_add) ###
+    current_set.append(feature_to_add)
     
+    if (choice == 1):
+        print("   Using feature(s) {", end='')
+        for feature in current_set:
+                print(str(feature) + ", ", end='')
 
+        print("}", end='')
 
     number_correctly_classified = 0
     #Loop to traverse the instances
@@ -54,6 +55,7 @@ def leave_one_out_cross_validation(data, current_set, feature_to_add):
             number_correctly_classified += 1
 
     accuracy = float(number_correctly_classified / len(data))
+    print("accuracy is " + str(accuracy*100) + "%")
     return accuracy
 
 
@@ -79,9 +81,8 @@ def feature_search_forward_selection(data):
         for k in range(1, numFeatures):
             #Only consider adding if not already added
             if (current_set_of_features.count(k) <= 0):
-                print("--Considering adding the " + str(k) + " feature")
                 #K-fold cross validation to calculate accuracy
-                accuracy = leave_one_out_cross_validation(data, current_set_of_features, k)
+                accuracy = leave_one_out_cross_validation(data, current_set_of_features, k, 1)
 
                 #Add feature that returns the highest accuracy
                 if accuracy > best_so_far_accuracy:
@@ -90,24 +91,50 @@ def feature_search_forward_selection(data):
 
         #Update working set of features
         current_set_of_features.append(feature_to_add_at_this_level)
-        print("On level " + str(i) + " I added feature " + str(feature_to_add_at_this_level) + " to current set, given an accuracy of " + str(best_so_far_accuracy))
-        print("Current set of features: ", end='')
-        print(current_set_of_features)
+       # print("On level " + str(i) + " I added feature " + str(feature_to_add_at_this_level) + " to current set, given an accuracy of " + str(best_so_far_accuracy))
+        print("Feature set: " + str(current_set_of_features) + " was best, accuracy is " + str(best_so_far_accuracy))
         print()
 
-        if (best_so_far_accuracy >= highestAccuracy):
+
+        if (best_so_far_accuracy > highestAccuracy):
             highestAccuracy = best_so_far_accuracy
             best_set_of_features = copy.deepcopy(current_set_of_features)
 
-    print("The best set of features is: ", end='')
+    print("Finished Search! The best feature subset is: ", end='')
     print(best_set_of_features, end='')
-    print(" With an accuracy of: " + str(highestAccuracy))
+    print(", which has an accuracy of: " + str(highestAccuracy * 100))
 
 
+def main():
+    print("Welcome to Zergio's Feature Selection Algorithm")
+    filename = input("Type in the name of the file to test: ")
+
+    try:
+        data = pd.read_csv(filename, sep="  ", header=None, engine='python')
+    except:
+        print("No such file exists. Goodbye!")
+        exit()
+
+    print("Type the number of the algorithm you want to run.")
+    print("   1) Forward Selection")
+    print("   2) Backward Elimination (FIXME)")
+    algorithm = int(input())
+
+    if (algorithm == 1):
+        print("This dataset has " + str(len(data.columns) - 1) + " features (not including the class attribute), with " + str(len(data)) + " instances.")
+        print("Running nearest neighbor with sets of all " + str(len(data.columns) - 1) + " features, using \"leaving-one-out\" evaluation.", end='')
+        print("Beginning Search")
+        print()
+        feature_search_forward_selection(data)
+    elif (algorithm == 2):
+        print("FIXME!")
+    else:
+        print("Not an option. Goodbye!")
+        exit()
 
 
-feature_search_forward_selection(data)
-
+##Run program
+main()
 
 
 
