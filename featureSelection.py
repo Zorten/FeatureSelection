@@ -4,16 +4,15 @@ import random
 import copy
 
 #Cross Validation
-def leave_one_out_cross_validation(data, current_set, feature_to_add, choice): 
+def leave_one_out_cross_validation(data, current_set, feature_to_add): 
     current_set = copy.deepcopy(current_set)
     current_set.append(feature_to_add)
     
-    if (choice == 1):
-        print("   Using feature(s) {", end='')
-        for feature in current_set:
-                print(str(feature) + ", ", end='')
+    # print("   Using feature(s) {", end='')
+    # for feature in current_set:
+    #     print(str(feature) + ", ", end='')
 
-        print("}", end='')
+    # print("} ", end='')
 
     number_correctly_classified = 0
     #Loop to traverse the instances
@@ -34,7 +33,6 @@ def leave_one_out_cross_validation(data, current_set, feature_to_add, choice):
         for k in range(0, len(data)):
             #Don't compare to yourself
             if (k != i):
-                #print("Ask if " + str(i+1) + " is nearest neighbor with " + str(k+1))
 
                 featureDF = [] ###/
                 for feature in current_set: 
@@ -55,7 +53,7 @@ def leave_one_out_cross_validation(data, current_set, feature_to_add, choice):
             number_correctly_classified += 1
 
     accuracy = float(number_correctly_classified / len(data))
-    print("accuracy is " + str(accuracy*100) + "%")
+    # print("accuracy is " + str(round(accuracy*100, 1)) + "%")
     return accuracy
 
 
@@ -82,7 +80,12 @@ def feature_search_forward_selection(data):
             #Only consider adding if not already added
             if (current_set_of_features.count(k) <= 0):
                 #K-fold cross validation to calculate accuracy
-                accuracy = leave_one_out_cross_validation(data, current_set_of_features, k, 1)
+                accuracy = leave_one_out_cross_validation(data, current_set_of_features, k)
+
+                if not current_set_of_features:
+                    print("Using feature(s) {" + str(k) + "} accuracy is " + str(round(accuracy * 100, 1)) + "%")
+                else:
+                    print("Using feature(s) {" + str(current_set_of_features)[1:-1] + ", " + str(k) + "} accuracy is " + str(round(accuracy * 100, 1)) + "%")
 
                 #Add feature that returns the highest accuracy
                 if accuracy > best_so_far_accuracy:
@@ -92,7 +95,7 @@ def feature_search_forward_selection(data):
         #Update working set of features
         current_set_of_features.append(feature_to_add_at_this_level)
        # print("On level " + str(i) + " I added feature " + str(feature_to_add_at_this_level) + " to current set, given an accuracy of " + str(best_so_far_accuracy))
-        print("Feature set: " + str(current_set_of_features) + " was best, accuracy is " + str(best_so_far_accuracy))
+        print("Feature set: {" + str(current_set_of_features)[1:-1] + "} was best, accuracy is " + str(round(best_so_far_accuracy * 100, 1)))
         print()
 
 
@@ -100,9 +103,7 @@ def feature_search_forward_selection(data):
             highestAccuracy = best_so_far_accuracy
             best_set_of_features = copy.deepcopy(current_set_of_features)
 
-    print("Finished Search! The best feature subset is: ", end='')
-    print(best_set_of_features, end='')
-    print(", which has an accuracy of: " + str(highestAccuracy * 100))
+    print("Finished Search! The best feature subset is: " + str(best_set_of_features)[1:-1] + "}, which has an accuracy of: " + str(round(highestAccuracy * 100, 1)))
 
 
 def main():
