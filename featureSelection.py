@@ -3,10 +3,14 @@ import copy
 import numpy as np
 
 #Cross Validation using nearest neighbor
-def leave_one_out_cross_validation(data, current_set, feature_to_add): 
+def leave_one_out_cross_validation(data, current_set, feature_to_test, choice): 
     #Create entire set of features to be tested (current_set + feature_to_add)
     current_set = copy.deepcopy(current_set)
-    current_set.append(feature_to_add)
+
+    if (choice == 1):
+        current_set.append(feature_to_test)
+    elif (choice == 2):
+        current_set.remove(feature_to_test)
 
     #Initialize variables
     num_rows = np.shape(data)[0]
@@ -51,7 +55,7 @@ def leave_one_out_cross_validation(data, current_set, feature_to_add):
     accuracy = float(number_correctly_classified / num_rows)
     return accuracy
 
-#Search function
+#Forward selection algorithm function
 def feature_search_forward_selection(data):
     #Initialize empty set
     current_set_of_features = []
@@ -80,7 +84,7 @@ def feature_search_forward_selection(data):
             #Only consider adding if not already added
             if (current_set_of_features.count(k) <= 0):
                 #K-fold cross validation to calculate accuracy
-                accuracy = leave_one_out_cross_validation(data, current_set_of_features, k)
+                accuracy = leave_one_out_cross_validation(data, current_set_of_features, k, 1)
 
                 #Output formatting
                 if not current_set_of_features:
@@ -95,6 +99,65 @@ def feature_search_forward_selection(data):
 
         #Update working set of features
         current_set_of_features.append(feature_to_add_at_this_level)
+        print()
+        print("Feature set {" + str(current_set_of_features)[1:-1] + "} was best, accuracy is " + str(round(best_so_far_accuracy * 100, 1)) + "%")
+
+        #Keeps track of best set and accuracy to determine final answer
+        if (best_so_far_accuracy > highestAccuracy):
+            highestAccuracy = best_so_far_accuracy
+            best_set_of_features = copy.deepcopy(current_set_of_features)
+
+    #Search
+    print("==============================================")
+    print("Finished Search! The best feature subset is {" + str(best_set_of_features)[1:-1] + "}, which has an accuracy of: " + str(round(highestAccuracy * 100, 1)) + "%")
+
+#Backward elimination algorithm function
+def feature_search_backward_elimination(data):
+    #In python, range() function is exclusive on its upper boundary, and for that reason 
+    # I don't -1 from the features since the range will go from 1 to numFeatures-1 automatically
+    numFeatures = np.shape(data)[1]
+
+    #Initialize set with all of the features
+    current_set_of_features = [*range(1, numFeatures)]
+
+    #Variables to keep track of final answer
+    highestAccuracy = 0
+    best_set_of_features = []
+
+
+    #For-loop to walk down the levels of search tree
+    for i in range(1, numFeatures-1):
+        #Output formatting
+        print("==============================================")
+        print("On the " + str(i) + "th level of the search tree")  
+        print()
+
+        #Initialize variables
+        feature_to_remove_at_this_level = 0
+        best_so_far_accuracy = 0
+        
+        #Loop to consider each feature individually
+        for k in range(1, numFeatures):
+            #Only consider adding if not already added
+            if (current_set_of_features.count(k) > 0):
+                #K-fold cross validation to calculate accuracy
+                accuracy = leave_one_out_cross_validation(data, current_set_of_features, k, 2)
+
+                #Output formatting
+                # if not current_set_of_features:
+                #     print("  Using feature(s) {" + str(k) + "} accuracy is " + str(round(accuracy * 100, 1)) + "%")
+                # else:
+                display_set = copy.deepcopy(current_set_of_features)
+                display_set.remove(k)
+                print("  Using feature(s) {" + str(display_set)[1:-1] + "} accuracy is " + str(round(accuracy * 100, 1)) + "%")
+
+                #Add feature that returns the highest accuracy, and update highest accuracy
+                if accuracy > best_so_far_accuracy:
+                    best_so_far_accuracy = accuracy
+                    feature_to_remove_at_this_level = k
+
+        #Update working set of features
+        current_set_of_features.remove(feature_to_remove_at_this_level)
         print()
         print("Feature set {" + str(current_set_of_features)[1:-1] + "} was best, accuracy is " + str(round(best_so_far_accuracy * 100, 1)) + "%")
 
@@ -132,17 +195,23 @@ def main():
     num_columns = np.shape(data)[1]
     print()
     print("This dataset has " + str(num_columns - 1) + " features (not including the class attribute), with " + str(num_rows) + " instances.")
-    print("Running nearest neighbor with sets of all " + str(num_columns - 1) + " features, using \"leaving-one-out\" evaluation.")
-    print()
-    print("Beginning Search")
+    print("Running nearest neighbor with all " + str(num_columns - 1) + " features, using \"leaving-one-out\" evaluation, I get accuracy: .", end='')
 
     #Forward selection algorithm
     if (algorithm == 1):
+        accuracy = leave_one_out_cross_validation(data, [*range(1, num_columns)], 6, 1)
+        print(str(round(accuracy * 100, 1)))
+        print()
+        print("Beginning Search")
         feature_search_forward_selection(data)
     
     #Backward Elimination algorithm
     elif (algorithm == 2):
-        print("FIXME!")
+        accuracy = leave_one_out_cross_validation(data, [*range(0, num_columns)], 0, 2)
+        print(str(round(accuracy * 100, 1)))
+        print()
+        print("Beginning Search")
+        feature_search_backward_elimination(data)
 
     #Incorrect input
     else:
