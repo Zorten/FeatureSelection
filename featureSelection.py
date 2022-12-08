@@ -1,77 +1,77 @@
-import pandas as pd
 import math
-import random
 import copy
+import numpy as np
 
-#Cross Validation
+#Cross Validation using nearest neighbor
 def leave_one_out_cross_validation(data, current_set, feature_to_add): 
+    #Create entire set of features to be tested (current_set + feature_to_add)
     current_set = copy.deepcopy(current_set)
     current_set.append(feature_to_add)
-    
-    # print("   Using feature(s) {", end='')
-    # for feature in current_set:
-    #     print(str(feature) + ", ", end='')
 
-    # print("} ", end='')
-
+    #Initialize variables
+    num_rows = np.shape(data)[0]
     number_correctly_classified = 0
+
     #Loop to traverse the instances
-    for i in range(0, len(data)):
-        #Initialize variables
-
-        featureDF = [] ###/
+    for i in range(0, num_rows):
+        #Create object with only features being tested
+        object_to_classify = []
         for feature in current_set: 
-            featureDF.append(data.iloc[i, feature])
-        object_to_classify = pd.Series(featureDF) ###\
+            object_to_classify.append(data[i][feature])
 
-
-        label_object_to_classify = data.iloc[i, 0]
+        #Initialize variables
+        label_object_to_classify = data[i][0]
         nearest_neighbor_distance = float('inf')
         nearest_neighbor_location = float('inf')
 
         #Loop to compare each instance with all its neighbors
-        for k in range(0, len(data)):
+        for k in range(0, num_rows):
             #Don't compare to yourself
             if (k != i):
-
-                featureDF = [] ###/
+                #Create neighbor to compare to, with only features being tested
+                neighbor = []
                 for feature in current_set: 
-                    featureDF.append(data.iloc[k, feature])
-                neighbor = pd.Series(featureDF) ###\
+                    neighbor.append(data[k][feature])
 
-
+                #Calculate distancce between current object and current neighbor
                 distance = math.dist(object_to_classify, neighbor)
+
+                #If a new nearest neighbor was found, update variables
                 if (distance < nearest_neighbor_distance):
                     nearest_neighbor_distance = distance
                     nearest_neighbor_location = k
-                    nearest_neighbor_label = data.iloc[nearest_neighbor_location, 0]
+                    nearest_neighbor_label = data[nearest_neighbor_location][0]
 
-        # print("Object " + str(i+1) + " is class " + str(label_object_to_classify))
-        # print("-- Its nearest neighbor is " + str(nearest_neighbor_location + 1) + " which is in class " + str(nearest_neighbor_label))
-
+        #After comparing curring object with all neighbors and finding a neearest one,
+        #see if classification was correct
         if (label_object_to_classify == nearest_neighbor_label):
             number_correctly_classified += 1
 
-    accuracy = float(number_correctly_classified / len(data))
-    # print("accuracy is " + str(round(accuracy*100, 1)) + "%")
+    #Calculate accuracy based on number of correct nearest neighbor calculations
+    accuracy = float(number_correctly_classified / num_rows)
     return accuracy
-
 
 #Search function
 def feature_search_forward_selection(data):
     #Initialize empty set
     current_set_of_features = []
 
+    #Variables to keep track of final answer
     highestAccuracy = 0
     best_set_of_features = []
 
     #In python, range() function is exclusive on its upper boundary, and for that reason 
     # I don't -1 from the features since the range will go from 1 to numFeatures-1 automatically
-    numFeatures = len(data.columns)
+    numFeatures = np.shape(data)[1]
 
-    #For loop to walk down the levels of search tree
+    #For-loop to walk down the levels of search tree
     for i in range(1, numFeatures):
+        #Output formatting
+        print("==============================================")
         print("On the " + str(i) + "th level of the search tree")  
+        print()
+
+        #Initialize variables
         feature_to_add_at_this_level = 0
         best_so_far_accuracy = 0
         
@@ -82,53 +82,69 @@ def feature_search_forward_selection(data):
                 #K-fold cross validation to calculate accuracy
                 accuracy = leave_one_out_cross_validation(data, current_set_of_features, k)
 
+                #Output formatting
                 if not current_set_of_features:
-                    print("Using feature(s) {" + str(k) + "} accuracy is " + str(round(accuracy * 100, 1)) + "%")
+                    print("  Using feature(s) {" + str(k) + "} accuracy is " + str(round(accuracy * 100, 1)) + "%")
                 else:
-                    print("Using feature(s) {" + str(current_set_of_features)[1:-1] + ", " + str(k) + "} accuracy is " + str(round(accuracy * 100, 1)) + "%")
+                    print("  Using feature(s) {" + str(current_set_of_features)[1:-1] + ", " + str(k) + "} accuracy is " + str(round(accuracy * 100, 1)) + "%")
 
-                #Add feature that returns the highest accuracy
+                #Add feature that returns the highest accuracy, and update highest accuracy
                 if accuracy > best_so_far_accuracy:
                     best_so_far_accuracy = accuracy
                     feature_to_add_at_this_level = k
 
         #Update working set of features
         current_set_of_features.append(feature_to_add_at_this_level)
-       # print("On level " + str(i) + " I added feature " + str(feature_to_add_at_this_level) + " to current set, given an accuracy of " + str(best_so_far_accuracy))
-        print("Feature set: {" + str(current_set_of_features)[1:-1] + "} was best, accuracy is " + str(round(best_so_far_accuracy * 100, 1)))
         print()
+        print("Feature set {" + str(current_set_of_features)[1:-1] + "} was best, accuracy is " + str(round(best_so_far_accuracy * 100, 1)) + "%")
 
-
+        #Keeps track of best set and accuracy to determine final answer
         if (best_so_far_accuracy > highestAccuracy):
             highestAccuracy = best_so_far_accuracy
             best_set_of_features = copy.deepcopy(current_set_of_features)
 
-    print("Finished Search! The best feature subset is: " + str(best_set_of_features)[1:-1] + "}, which has an accuracy of: " + str(round(highestAccuracy * 100, 1)))
+    #Search
+    print("==============================================")
+    print("Finished Search! The best feature subset is {" + str(best_set_of_features)[1:-1] + "}, which has an accuracy of: " + str(round(highestAccuracy * 100, 1)) + "%")
 
-
+#Main function
 def main():
+    #Display welcome message and get filename from user
     print("Welcome to Zergio's Feature Selection Algorithm")
     filename = input("Type in the name of the file to test: ")
 
+    #Attempt to load Data into numpy array, if fails then exit program
     try:
-        data = pd.read_csv(filename, sep="  ", header=None, engine='python')
+        data = np.loadtxt(filename)
+        
     except:
         print("No such file exists. Goodbye!")
         exit()
 
+    #Get user input for algorithm selection
     print("Type the number of the algorithm you want to run.")
     print("   1) Forward Selection")
     print("   2) Backward Elimination (FIXME)")
     algorithm = int(input())
 
+    #Get and display basic info for the data
+    num_rows = np.shape(data)[0]
+    num_columns = np.shape(data)[1]
+    print()
+    print("This dataset has " + str(num_columns - 1) + " features (not including the class attribute), with " + str(num_rows) + " instances.")
+    print("Running nearest neighbor with sets of all " + str(num_columns - 1) + " features, using \"leaving-one-out\" evaluation.")
+    print()
+    print("Beginning Search")
+
+    #Forward selection algorithm
     if (algorithm == 1):
-        print("This dataset has " + str(len(data.columns) - 1) + " features (not including the class attribute), with " + str(len(data)) + " instances.")
-        print("Running nearest neighbor with sets of all " + str(len(data.columns) - 1) + " features, using \"leaving-one-out\" evaluation.", end='')
-        print("Beginning Search")
-        print()
         feature_search_forward_selection(data)
+    
+    #Backward Elimination algorithm
     elif (algorithm == 2):
         print("FIXME!")
+
+    #Incorrect input
     else:
         print("Not an option. Goodbye!")
         exit()
