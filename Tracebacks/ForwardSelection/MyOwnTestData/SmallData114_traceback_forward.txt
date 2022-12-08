@@ -1,12 +1,12 @@
 Welcome to Zergio's Feature Selection Algorithm
 Type in the name of the file to test: Type the number of the algorithm you want to run.
    1) Forward Selection
-   2) Backward Elimination (FIXME)
+   2) Backward Elimination
 
 This dataset has 6 features (not including the class attribute), with 500 instances.
-Running nearest neighbor with sets of all 6 features, using "leaving-one-out" evaluation.
+Running nearest neighbor with all 6 features, using "leaving-one-out" evaluation, I get accuracy: 82.6%
 
-Beginning Search
+Beginning Forward Selection Search
 ==============================================
 On the 1th level of the search tree
 
@@ -60,3 +60,5 @@ On the 6th level of the search tree
 Feature set {6, 1, 3, 5, 2, 4} was best, accuracy is 80.8%
 ==============================================
 Finished Search! The best feature subset is {6, 1}, which has an accuracy of: 97.4%
+==============================================
+Time elapsed: 2.7 seconds

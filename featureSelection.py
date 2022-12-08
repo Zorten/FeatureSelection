@@ -1,5 +1,6 @@
 import math
 import copy
+import time
 import numpy as np
 
 #Cross Validation using nearest neighbor
@@ -13,7 +14,7 @@ def leave_one_out_cross_validation(data, current_set, feature_to_test, choice):
         current_set.remove(feature_to_test)
 
     #Initialize variables
-    num_rows = np.shape(data)[0]
+    num_rows = len(data)
     number_correctly_classified = 0
 
     #Loop to traverse the instances
@@ -21,7 +22,8 @@ def leave_one_out_cross_validation(data, current_set, feature_to_test, choice):
         #Create object with only features being tested
         object_to_classify = []
         for feature in current_set: 
-            object_to_classify.append(data[i][feature])
+           object_to_classify.append(data[i][feature])
+
 
         #Initialize variables
         label_object_to_classify = data[i][0]
@@ -66,7 +68,7 @@ def feature_search_forward_selection(data):
 
     #In python, range() function is exclusive on its upper boundary, and for that reason 
     # I don't -1 from the features since the range will go from 1 to numFeatures-1 automatically
-    numFeatures = np.shape(data)[1]
+    numFeatures = len(data[0])
 
     #For-loop to walk down the levels of search tree
     for i in range(1, numFeatures):
@@ -115,7 +117,7 @@ def feature_search_forward_selection(data):
 def feature_search_backward_elimination(data):
     #In python, range() function is exclusive on its upper boundary, and for that reason 
     # I don't -1 from the features since the range will go from 1 to numFeatures-1 automatically
-    numFeatures = np.shape(data)[1]
+    numFeatures = len(data[0])
 
     #Initialize set with all of the features
     current_set_of_features = [*range(1, numFeatures)]
@@ -169,6 +171,7 @@ def feature_search_backward_elimination(data):
     #Search
     print("==============================================")
     print("Finished Search! The best feature subset is {" + str(best_set_of_features)[1:-1] + "}, which has an accuracy of: " + str(round(highestAccuracy * 100, 1)) + "%")
+    print()
 
 #Main function
 def main():
@@ -179,6 +182,7 @@ def main():
     #Attempt to load Data into numpy array, if fails then exit program
     try:
         data = np.loadtxt(filename)
+        data = data.tolist()
         
     except:
         print("No such file exists. Goodbye!")
@@ -187,36 +191,57 @@ def main():
     #Get user input for algorithm selection
     print("Type the number of the algorithm you want to run.")
     print("   1) Forward Selection")
-    print("   2) Backward Elimination (FIXME)")
+    print("   2) Backward Elimination")
     algorithm = int(input())
 
     #Get and display basic info for the data
-    num_rows = np.shape(data)[0]
-    num_columns = np.shape(data)[1]
+    num_rows = len(data)
+    num_columns = len(data[0])
     print()
     print("This dataset has " + str(num_columns - 1) + " features (not including the class attribute), with " + str(num_rows) + " instances.")
-    print("Running nearest neighbor with all " + str(num_columns - 1) + " features, using \"leaving-one-out\" evaluation, I get accuracy: .", end='')
+    print("Running nearest neighbor with all " + str(num_columns - 1) + " features, using \"leaving-one-out\" evaluation, I get accuracy: ", end='')
 
     #Forward selection algorithm
     if (algorithm == 1):
         accuracy = leave_one_out_cross_validation(data, [*range(1, num_columns)], 6, 1)
-        print(str(round(accuracy * 100, 1)))
+        print(str(round(accuracy * 100, 1)) + "%")
         print()
-        print("Beginning Search")
+        print("Beginning Forward Selection Search")
+        startTime = time.time()
         feature_search_forward_selection(data)
+        endTime = time.time()
+        printTime(startTime, endTime)
     
     #Backward Elimination algorithm
     elif (algorithm == 2):
         accuracy = leave_one_out_cross_validation(data, [*range(0, num_columns)], 0, 2)
-        print(str(round(accuracy * 100, 1)))
+        print(str(round(accuracy * 100, 1)) + "%")
         print()
-        print("Beginning Search")
+        print("Beginning Backward Elimination Search")
+        startTime = time.time()
         feature_search_backward_elimination(data)
+        endTime = time.time()
+        printTime(startTime, endTime)
 
     #Incorrect input
     else:
         print("Not an option. Goodbye!")
         exit()
+
+def printTime(startTime, endTime):
+    print("==============================================")
+    totalTime = endTime - startTime
+    if (totalTime >= 60):
+        totalTime = totalTime / 60
+        totalTime = round(totalTime, 1)
+        print("Time elapsed: " + str(totalTime) + " minutes")
+    elif (totalTime >= 1):
+        totalTime = round(totalTime, 1)
+        print("Time elapsed: " + str(totalTime) + " seconds")
+    else:
+        totalTime = totalTime * 1000
+        totalTime = round(totalTime)
+        print("Time elapsed: " + str(totalTime) + " milliseconds")
 
 
 ##Run program
