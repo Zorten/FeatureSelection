@@ -4,7 +4,7 @@ Type in the name of the file to test: Type the number of the algorithm you want 
    2) Backward Elimination
 
 This dataset has 6 features (not including the class attribute), with 500 instances.
-Running nearest neighbor with all 6 features, using "leaving-one-out" evaluation, I get accuracy: 82.6%
+Running nearest neighbor with all 6 features, using "leaving-one-out" evaluation, I get accuracy: 80.8%
 
 Beginning Forward Selection Search
 ==============================================

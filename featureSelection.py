@@ -203,7 +203,7 @@ def main():
 
     #Forward selection algorithm
     if (algorithm == 1):
-        accuracy = leave_one_out_cross_validation(data, [*range(1, num_columns)], 6, 1)
+        accuracy = leave_one_out_cross_validation(data, [*range(1, num_columns - 1)], num_columns-1, 1)
         print(str(round(accuracy * 100, 1)) + "%")
         print()
         print("Beginning Forward Selection Search")
