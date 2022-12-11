@@ -1,3 +1,18 @@
+#####Author: Zergio Ruvalcaba
+#####CS170 Project 2: Feature Selection using Nearest Neighnor Algorithm
+## Project Description: This program will determine the optimal subset of features to classify
+## objects from a file with data. The program can perform two search algorithms to do this:
+##    Forward Selection
+##    Backward Elimination
+## The program takes in data in the following format: Each row is an instance of an object, with
+## the first column being the object class/label, and the remaining columns are the features
+## being considered to classify the object. 
+#
+# I acknowledge all content contained herein, excluding template, provided code, or example
+# code, is my own original work.
+#
+
+
 import math
 import copy
 import time
@@ -8,8 +23,11 @@ def leave_one_out_cross_validation(data, current_set, feature_to_test, choice):
     #Create entire set of features to be tested (current_set + feature_to_add)
     current_set = copy.deepcopy(current_set)
 
+    #Forward Selection (Adding a feature)
     if (choice == 1):
         current_set.append(feature_to_test)
+
+    #Backward Elimination (Removing feature)
     elif (choice == 2):
         current_set.remove(feature_to_test)
 
@@ -19,11 +37,11 @@ def leave_one_out_cross_validation(data, current_set, feature_to_test, choice):
 
     #Loop to traverse the instances
     for i in range(0, num_rows):
+
         #Create object with only features being tested
         object_to_classify = []
         for feature in current_set: 
            object_to_classify.append(data[i][feature])
-
 
         #Initialize variables
         label_object_to_classify = data[i][0]
@@ -55,6 +73,7 @@ def leave_one_out_cross_validation(data, current_set, feature_to_test, choice):
 
     #Calculate accuracy based on number of correct nearest neighbor calculations
     accuracy = float(number_correctly_classified / num_rows)
+
     return accuracy
 
 #Forward selection algorithm function
